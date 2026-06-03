@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card" style="max-width: 500px; margin: 0 auto;">
+    <h2 style="margin-bottom: 2rem;">Create your account</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label }}
+            {{ form.username(placeholder="Choose a username") }}
+            {% if form.username.errors %}
+                {% for error in form.username.errors %}
+                    <span class="status-danger">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.email.label }}
+            {{ form.email(placeholder="Enter your email") }}
+            {% if form.email.errors %}
+                {% for error in form.email.errors %}
+                    <span class="status-danger">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.phone.label }}
+            {{ form.phone(placeholder="Optional: your phone number") }}
+            {% if form.phone.errors %}
+                {% for error in form.phone.errors %}
+                    <span class="status-danger">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.password.label }}
+            {{ form.password(placeholder="Create a password") }}
+            {% if form.password.errors %}
+                {% for error in form.password.errors %}
+                    <span class="status-danger">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.confirm_password.label }}
+            {{ form.confirm_password(placeholder="Confirm password") }}
+            {% if form.confirm_password.errors %}
+                {% for error in form.confirm_password.errors %}
+                    <span class="status-danger">{{ error }}</span>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {{ form.submit(class="btn btn-primary", style="width: 100%;") }}
+    </form>
+    <div style="margin-top: 1.5rem; text-align: center; color: var(--text-secondary);">
+        Already have an account? <a href="{{ url_for('auth.login') }}" style="color: var(--accent-primary); text-decoration: none;">Log In</a>
+    </div>
+</div>
+{% endblock content %}

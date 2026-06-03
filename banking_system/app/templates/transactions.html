@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>Transaction History</h2>
+        <a href="{{ url_for('banking.dashboard') }}" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-primary);">Back to Dashboard</a>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in transactions %}
+                <tr>
+                    <td style="color: var(--text-secondary);">{{ transaction.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <span style="text-transform: capitalize; font-weight: 600;">
+                            {{ transaction.type.replace('_', ' ') }}
+                        </span>
+                    </td>
+                    <td>
+                        {{ transaction.description }}
+                        {% if transaction.status == 'Rejected' and transaction.rejection_reason %}
+                            <div style="font-size: 0.75rem; color: #ff4757; margin-top: 4px;">Reason: {{ transaction.rejection_reason }}</div>
+                        {% endif %}
+                    </td>
+                    <td class="{% if transaction.type in ['deposit', 'transfer_in'] %}status-success{% else %}status-danger{% endif %}">
+                        {% if transaction.type in ['deposit', 'transfer_in'] %}+{% else %}-{% endif %}${{ "%.2f"|format(transaction.amount) }}
+                    </td>
+                    <td>
+                        <span class="status-badge {{ transaction.status.lower() }}">{{ transaction.status }}</span>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-secondary);">No transactions found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}

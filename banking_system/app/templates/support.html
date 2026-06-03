@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card">
+    <h2 class="premium-title">Customer Support</h2>
+    <p class="premium-subtitle">Have a question or issue? Message our admin team.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-top: 2rem;">
+        <!-- Message Form -->
+        <div>
+            <div class="glass-card" style="padding: 1.5rem; background: rgba(255,255,255,0.03);">
+                <h4>New Inquiry</h4>
+                <form method="POST" style="margin-top: 1rem;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" name="subject" id="subject" placeholder="e.g. Withdrawal Inquiry" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea name="message" id="message" rows="5" placeholder="How can we help you?" required style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 0.8rem;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Message History -->
+        <div>
+            <h3>Your Conversations</h3>
+            <div class="message-history" style="margin-top: 1rem; max-height: 500px; overflow-y: auto; padding-right: 10px;">
+                {% if messages %}
+                    {% for msg in messages %}
+                    <div class="glass-card" style="margin-bottom: 1rem; padding: 1rem; background: {% if msg.sender_id == current_user.id %}rgba(56, 189, 248, 0.05){% else %}rgba(0, 255, 136, 0.05){% endif %};">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <strong style="color: {% if msg.sender_id == current_user.id %}var(--primary-color){% else %}#00ff88{% endif %};">
+                                {{ "You" if msg.sender_id == current_user.id else "Admin" }}
+                            </strong>
+                            <small class="text-muted">{{ msg.timestamp.strftime('%b %d, %H:%M') }}</small>
+                        </div>
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ msg.subject }}</div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">{{ msg.message }}</p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No messages yet. Send your first inquiry!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

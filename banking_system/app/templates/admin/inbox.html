@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card">
+    <h2 class="premium-title">Admin Inbox</h2>
+    <p class="premium-subtitle">Manage client inquiries and support tickets.</p>
+
+    <div class="message-list" style="margin-top: 2rem;">
+        {% if messages %}
+            {% for msg in messages %}
+            <div class="glass-card" style="margin-bottom: 1.5rem; padding: 1.5rem; border-left: 4px solid {% if msg.is_read %}transparent{% else %}var(--primary-color){% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                            From: <strong>{{ msg.sender.username }}</strong> ({{ msg.sender.email }}) | {{ msg.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                        <h4 style="margin-bottom: 0.5rem;">{{ msg.subject }}</h4>
+                        <p style="color: var(--text-secondary); line-height: 1.5;">{{ msg.message }}</p>
+                    </div>
+                    {% if not msg.is_read %}
+                        <span class="status-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">NEW</span>
+                    {% endif %}
+                </div>
+
+                <div class="reply-section" style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <form action="{{ url_for('admin.reply_message', message_id=msg.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div style="display: flex; gap: 1rem;">
+                            <textarea name="reply" rows="2" placeholder="Write a reply..." required style="flex-grow: 1; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 0.8rem;"></textarea>
+                            <button type="submit" class="btn btn-success btn-sm" style="align-self: flex-end;">Reply</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="text-align: center; padding: 3rem;">
+                <p class="text-muted">No pending inquiries. All caught up!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card">
+    <div class="header-with-action">
+        <h1 class="premium-title">Manage Users</h1>
+        <a href="{{ url_for('admin.dashboard') }}" class="btn-back">← Back to Dashboard</a>
+    </div>
+
+    <div class="user-table-container">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Account #</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <span class="user-name">{{ user.username }}</span>
+                            <span class="user-email">{{ user.email }}</span>
+                        </div>
+                    </td>
+                    <td><code>{{ user.account_number }}</code></td>
+                    <td>${{ "{:,.2f}".format(user.balance) }}</td>
+                    <td>
+                        <span id="status-badge-{{ user.id }}" class="status-badge {{ user.status.lower() }}">{{ user.status }}</span>
+                    </td>
+                    <td>
+                        {% if user.id != current_user.id %}
+                            <button class="btn btn-sm {{ 'btn-danger' if user.status == 'Active' else 'btn-success' }} btn-toggle-status" 
+                                    data-user-id="{{ user.id }}">
+                               {{ 'Freeze' if user.status == 'Active' else 'Unfreeze' }}
+                            </button>
+                        {% else %}
+                            <span class="text-muted">Self</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .header-with-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .btn-back {
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+    .user-table-container {
+        overflow-x: auto;
+    }
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    .premium-table th, .premium-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .premium-table th {
+        color: var(--text-secondary);
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+    }
+    .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+    .user-email {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+    .btn-danger { background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .btn-success { background: #00ff88; color: #001219; border: none; border-radius: 8px; cursor: pointer; }
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .status-badge.active { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+    .status-badge.suspended { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+</style>
+{% endblock %}

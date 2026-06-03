@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>NeoBank - {{ title if title else "Premium Banking" }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <div class="logo">NeoBank</div>
+            <div class="nav-links">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('banking.dashboard') }}">Dashboard</a>
+                    <a href="{{ url_for('banking.transactions') }}">Activity</a>
+                    <a href="{{ url_for('banking.support') }}">Support</a>
+                    {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin.dashboard') }}" style="color: #ffcc00; position: relative;">
+                            Admin
+                            {% if pending_tx_count > 0 %}
+                                <span class="nav-badge">{{ pending_tx_count }}</span>
+                            {% endif %}
+                        </a>
+                        <a href="{{ url_for('admin.inbox') }}" style="color: #ffcc00;">Inbox</a>
+                    {% endif %}
+                    <a href="{{ url_for('auth.logout') }}">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}">Login</a>
+                    <a href="{{ url_for('auth.register') }}">Register</a>
+                {% endif %}
+            </div>
+        </nav>
+
+        <div id="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Global Modal for Rejection Reason -->
+    <div id="rejectionModal" class="modal-overlay" style="display: none;">
+        <div class="glass-card modal-content" style="max-width: 400px; margin: 10% auto; padding: 2rem;">
+            <h3>Cancel Transaction</h3>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">Please provide a reason for cancelling this request.</p>
+            <textarea id="modalReason" rows="3" placeholder="e.g. Insufficient identification" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; padding: 0.8rem; margin-bottom: 1.5rem;"></textarea>
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button onclick="closeRejectionModal()" class="btn btn-outline" style="padding: 8px 16px;">Back</button>
+                <button id="confirmRejectionBtn" class="btn btn-danger" style="padding: 8px 16px;">Confirm Cancellation</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <style>
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.5s ease;
+        }
+    </style>
+</body>
+</html>

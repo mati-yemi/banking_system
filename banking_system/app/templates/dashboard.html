@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dashboard-grid">
+    <div class="glass-card balance-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+            <h3 style="color: var(--text-secondary);">Available Balance</h3>
+            <span class="status-badge {{ current_user.status.lower() }}">{{ current_user.status }}</span>
+        </div>
+        <div class="balance-amount">${{ "%.2f"|format(current_user.balance) }}</div>
+        <div style="color: var(--text-secondary); margin-top: 1rem; font-size: 0.9rem;">
+            Account #: <strong>{{ current_user.account_number }}</strong>
+        </div>
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+            <a href="{{ url_for('banking.deposit') }}" class="btn btn-primary">Deposit</a>
+            <a href="{{ url_for('banking.withdraw') }}" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-primary);">Withdraw</a>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h3>Quick Actions</h3>
+        <p style="color: var(--text-secondary); margin: 1rem 0 2rem 0;">Manage your funds with ease.</p>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <a href="{{ url_for('banking.transfer') }}" class="btn btn-primary">Transfer Funds</a>
+            <a href="{{ url_for('banking.transactions') }}" class="btn" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-primary); margin-bottom: 0.5rem;">View Transaction History</a>
+            <a href="{{ url_for('banking.support') }}" class="btn btn-outline" style="border-color: #38bdf8; color: #38bdf8;">Contact Support</a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

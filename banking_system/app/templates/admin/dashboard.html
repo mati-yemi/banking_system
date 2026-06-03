@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="glass-card">
+    <h1 class="premium-title">Admin Dashboard</h1>
+    <p class="premium-subtitle">System Overview and Control</p>
+
+    <div class="stats-grid">
+        <div class="stat-item">
+            <span class="stat-label">Total Users</span>
+            <span class="stat-value">{{ total_users }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">System Liquidity</span>
+            <span class="stat-value">${{ "{:,.2f}".format(total_balance) }}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Pending Approvals</span>
+            <span class="stat-value" style="color: #ffcc00;">{{ pending_transactions }}</span>
+        </div>
+    </div>
+
+    <div class="glass-card" style="margin-top: 2rem; padding: 1.5rem;">
+        <h3>Transaction Volume (Last 7 Days)</h3>
+        <canvas id="activityChart" height="100"></canvas>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('/admin/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('activityChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Number of Transactions',
+                                data: data.data,
+                                borderColor: '#38bdf8',
+                                backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                });
+        });
+    </script>
+
+    <div class="action-grid" style="margin-top: 2rem;">
+        <a href="{{ url_for('admin.users_list') }}" class="btn btn-primary">Manage Users</a>
+        <a href="{{ url_for('admin.pending_transactions') }}" class="btn btn-secondary">Review All Transactions</a>
+        <a href="{{ url_for('admin.settings') }}" class="btn btn-outline">System Settings</a>
+    </div>
+
+    {% if pending_txs %}
+    <div class="pending-section" style="margin-top: 3rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Pending Client Transactions</h3>
+            <span class="badge-count">{{ pending_transactions }} total</span>
+        </div>
+        <div class="transaction-list">
+            {% for tx in pending_txs %}
+            <div class="transaction-item" id="tx-row-{{ tx.id }}" style="padding: 1.5rem;">
+                <div class="tx-info">
+                    <span class="tx-type">{{ tx.type.title() }}</span>
+                    <span class="tx-date">Client: <strong>{{ tx.owner.username }}</strong></span>
+                    <span class="tx-date">{{ tx.timestamp.strftime('%b %d, %H:%M') }}</span>
+                    <div style="font-weight: 700; color: #ffcc00; margin-top: 0.5rem;">${{ "{:,.2f}".format(tx.amount) }}</div>
+                </div>
+                <div class="tx-actions">
+                    <button class="btn btn-success btn-sm tx-action-btn" data-tx-id="{{ tx.id }}" data-action="approve">Confirm</button>
+                    <button class="btn btn-danger btn-sm tx-action-btn" data-tx-id="{{ tx.id }}" data-action="reject">Cancel</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="recent-activity" style="margin-top: 3rem;">
+        <h3>Recent User Registrations</h3>
+        <div class="transaction-list">
+            {% for user in recent_users %}
+            <div class="transaction-item">
+                <div class="tx-info">
+                    <span class="tx-type">{{ user.username }}</span>
+                    <span class="tx-date">{{ user.email }}</span>
+                </div>
+                <div class="tx-amount">
+                    <span class="status-badge {{ user.status.lower() }}">{{ user.status }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge-count {
+        background: rgba(255, 204, 0, 0.2);
+        color: #ffcc00;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .tx-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+    .stat-item {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .stat-label {
+        display: block;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary-color);
+    }
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    .status-badge.active { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+    .status-badge.suspended { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+</style>
+{% endblock %}
