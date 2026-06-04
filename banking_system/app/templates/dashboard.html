@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+{% if current_user.is_authenticated %}
 <div class="dashboard-grid">
     <div class="glass-card balance-card">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
@@ -26,4 +27,28 @@
         </div>
     </div>
 </div>
+{% else %}
+<div class="dashboard-grid">
+    <div class="glass-card balance-card">
+        <h2>Welcome to NeoBank</h2>
+        <p style="color: var(--text-secondary); margin-top: 1rem; line-height: 1.6;">
+            Access your digital banking dashboard instantly. Log in or register to view your balance,
+            transfer funds, and manage your account.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem; flex-wrap: wrap;">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Login</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline">Sign Up</a>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h3>Why NeoBank?</h3>
+        <ul style="color: var(--text-secondary); line-height: 1.8; margin-top: 1rem; padding-left: 1.2rem;">
+            <li>Fast, secure banking for customers.</li>
+            <li>Track transactions and manage support requests.</li>
+            <li>Available on any device with a modern browser.</li>
+        </ul>
+    </div>
+</div>
+{% endif %}
 {% endblock content %}

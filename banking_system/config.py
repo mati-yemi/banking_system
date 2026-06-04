@@ -8,6 +8,20 @@ Never hardcode sensitive credentials in the code.
 import os
 from datetime import timedelta
 
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DEFAULT_DB_PATH = os.path.join(BASE_DIR, 'instance', 'neobank.db')
+
+
+def _normalize_database_url(url):
+    if not url:
+        return None
+    if url.startswith('sqlite:///'):
+        path = url[10:]
+        if not os.path.isabs(path) and path != ':memory:':
+            return f"sqlite:///{os.path.normpath(os.path.join(BASE_DIR, path))}"
+    return url
+
+
 class Config:
     """Base configuration with security best practices."""
     
@@ -15,10 +29,9 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
     
     # Database
-    SQLALCHEMY_DATABASE_URI = os.getenv(
-        'DATABASE_URL',
-        'sqlite:///neobank.db'  # Default to SQLite for development
-    )
+    SQLALCHEMY_DATABASE_URI = _normalize_database_url(
+        os.getenv('DATABASE_URL')
+    ) or f'sqlite:///{DEFAULT_DB_PATH}'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 10,
@@ -93,10 +106,12 @@ class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = True
     REMEMBER_COOKIE_SECURE = True
     WTF_CSRF_SSL_STRICT = True
-    
-    # Ensure SECRET_KEY is set in production
-    if os.getenv('SECRET_KEY') in (None, '', 'dev-key-change-in-production'):
-        raise ValueError("SECRET_KEY environment variable is required for production!")
+
+    @classmethod
+    def validate(cls):
+        """Validate production-specific configuration when production is selected."""
+        if os.getenv('SECRET_KEY') in (None, '', 'dev-key-change-in-production'):
+            raise ValueError("SECRET_KEY environment variable is required for production!")
 
 
 class TestingConfig(Config):

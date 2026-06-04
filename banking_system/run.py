@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # Get environment and debug setting from environment variables
     env = os.getenv('FLASK_ENV', 'development').lower()
     debug_mode = env == 'development'  # Only enable debug in development
-    port = int(os.getenv('FLASK_PORT', 5000))
+    port = int(os.getenv('PORT', os.getenv('FLASK_PORT', 5000)))
     host = os.getenv('FLASK_HOST', '0.0.0.0')  # Listen on all interfaces by default
     
     # Print startup information

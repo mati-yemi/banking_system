@@ -6,6 +6,7 @@ login sessions, and secure logout with enhanced security measures.
 """
 
 from datetime import datetime, timedelta
+import os
 from flask import render_template, url_for, flash, redirect, request, Blueprint
 from flask_login import login_user, current_user, logout_user, login_required
 from werkzeug.security import check_password_hash
@@ -38,6 +39,12 @@ def register():
             # Sanitize inputs
             username = sanitize_input(form.username.data)
             email = sanitize_input(form.email.data).lower()
+
+            # Prevent registering with the admin email
+            admin_email = os.getenv('ADMIN_EMAIL')
+            if admin_email and email == admin_email.lower():
+                flash('Registration using the administrative email is not allowed.', 'danger')
+                return render_template('register.html', title='Register', form=form)
             
             # Hash the password using bcrypt
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -79,13 +86,21 @@ def login():
     - Upgrades legacy password hashes to bcrypt on successful login
     """
     if current_user.is_authenticated:
-        return redirect(url_for('banking.dashboard'))
+        return redirect(url_for('admin.dashboard')) if current_user.is_admin else redirect(url_for('banking.dashboard'))
         
     form = LoginForm()
     if form.validate_on_submit():
         try:
             email = sanitize_input(form.email.data).lower()
             user = User.query.filter_by(email=email).first()
+
+            # If the attempted email matches the admin email but the account is not an admin, block it
+            admin = User.query.filter_by(is_admin=True).first()
+            admin_email = (admin.email.lower() if admin and admin.email else os.getenv('ADMIN_EMAIL'))
+            if admin_email and email == admin_email.lower() and (not user or not user.is_admin):
+                log_security_event('ADMIN_EMAIL_LOGIN_BLOCKED', username=email, details='Non-admin attempted admin email login', severity='CRITICAL')
+                flash('Invalid credentials.', 'danger')
+                return render_template('login.html', title='Login', form=form)
             
             # Check if account is locked due to too many failed attempts
             if user and user.locked_until and user.locked_until > datetime.utcnow():
@@ -121,7 +136,11 @@ def login():
                 
                 # Retrieve the next page from arguments if redirected from a login_required guard
                 next_page = request.args.get('next')
-                return redirect(next_page) if next_page else redirect(url_for('banking.dashboard'))
+                if next_page:
+                    return redirect(next_page)
+                if user.is_admin:
+                    return redirect(url_for('admin.dashboard'))
+                return redirect(url_for('banking.dashboard'))
             else:
                 # Track failed login attempts
                 if user:

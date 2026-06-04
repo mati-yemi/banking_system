@@ -66,7 +66,12 @@ class User(db.Model, UserMixin):
     last_login = db.Column(db.DateTime, nullable=True)
     
     # Back-reference linking a client to all their transactions
-    transactions = db.relationship('Transaction', backref='owner', lazy=True)
+    transactions = db.relationship(
+        'Transaction',
+        backref='owner',
+        lazy=True,
+        foreign_keys='Transaction.user_id'
+    )
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}', Balance: {self.balance}, Status: {self.status})"

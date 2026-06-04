@@ -7,6 +7,8 @@ Creates and configures the Flask application with all extensions and blueprints.
 
 import os
 from flask import Flask
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 from app.extensions import db, bcrypt, csrf, login_manager, migrate, limiter
 from app.security import setup_audit_logger
 
@@ -24,8 +26,8 @@ def create_app(config_name=None):
     app = Flask(__name__)
     
     # Load configuration from environment
+    env = os.getenv('FLASK_ENV', 'development').lower()
     if config_name is None:
-        env = os.getenv('FLASK_ENV', 'development').lower()
         if env == 'production':
             from config import ProductionConfig
             config_name = ProductionConfig
@@ -37,6 +39,24 @@ def create_app(config_name=None):
             config_name = DevelopmentConfig
     
     app.config.from_object(config_name)
+
+    if env == 'production' and hasattr(config_name, 'validate'):
+        config_name.validate()
+
+    # Fallback to SQLite during development if configured database is unavailable
+    if env != 'production':
+        database_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+        if database_uri.startswith(('postgresql://', 'postgres://')):
+            try:
+                create_engine(database_uri).connect().close()
+            except OperationalError as exc:
+                from config import DEFAULT_DB_PATH
+                os.makedirs(os.path.dirname(DEFAULT_DB_PATH), exist_ok=True)
+                fallback_uri = f"sqlite:///{DEFAULT_DB_PATH}"
+                print(f"Warning: Could not connect to configured database. Falling back to SQLite at {fallback_uri}.")
+                print(f"Database error: {exc}")
+                app.config['SQLALCHEMY_DATABASE_URI'] = fallback_uri
+                app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {}
     
     # Initialize extensions
     db.init_app(app)
@@ -88,5 +108,20 @@ def create_app(config_name=None):
     # Create database tables
     with app.app_context():
         db.create_all()
+
+    # Inject pending transaction count into all templates to avoid undefined errors
+    @app.context_processor
+    def inject_pending_tx_count():
+        try:
+            from flask_login import current_user
+            from app.models import Transaction
+
+            if current_user.is_authenticated and getattr(current_user, 'is_admin', False):
+                count = Transaction.query.filter_by(status='Pending').count()
+            else:
+                count = 0
+        except Exception:
+            count = 0
+        return dict(pending_tx_count=count)
     
     return app

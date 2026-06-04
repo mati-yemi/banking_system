@@ -34,9 +34,12 @@ def active_account_required(f):
 
 @banking.route("/")
 @banking.route("/dashboard")
-@login_required
 def dashboard():
-    """Renders the core customer dashboard showing balances and fast action cards."""
+    """Renders the customer dashboard page.
+
+    The dashboard is now publicly accessible and will show a guest
+    landing view when the user is not authenticated.
+    """
     return render_template('dashboard.html', title='Dashboard')
 
 
