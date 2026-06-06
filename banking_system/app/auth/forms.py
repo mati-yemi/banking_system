@@ -70,8 +70,8 @@ class LoginForm(FlaskForm):
     """Login form for existing clients to submit authentication credentials."""
 
     email = StringField(
-        'Email', 
-        validators=[DataRequired(), Email()]
+        'Email or Username', 
+        validators=[DataRequired()]
     )
     password = PasswordField(
         'Password', 

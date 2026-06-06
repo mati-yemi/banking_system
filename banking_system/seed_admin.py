@@ -13,10 +13,10 @@ from app.extensions import db, bcrypt
 from app.models import User, SystemConfig
 
 # Admin credential defaults (override with environment variables as needed)
-ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'sama71@gmail.com')
-ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'GALABE SAMA ANGELE')
-ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'Sama12345678@')
-ADMIN_PHONE = os.getenv('ADMIN_PHONE', '68001351')
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@admin.com')
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
+ADMIN_PHONE = os.getenv('ADMIN_PHONE', None)
 
 # Instantiate application factory
 app = create_app()

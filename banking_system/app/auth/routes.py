@@ -91,14 +91,19 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         try:
-            email = sanitize_input(form.email.data).lower()
-            user = User.query.filter_by(email=email).first()
+            identifier = sanitize_input(form.email.data)
+            if '@' in identifier:
+                email = identifier.lower()
+                user = User.query.filter_by(email=email).first()
+            else:
+                email = None
+                user = User.query.filter_by(username=identifier).first()
 
             # If the attempted email matches the admin email but the account is not an admin, block it
             admin = User.query.filter_by(is_admin=True).first()
             admin_email = (admin.email.lower() if admin and admin.email else os.getenv('ADMIN_EMAIL'))
             if admin_email and email == admin_email.lower() and (not user or not user.is_admin):
-                log_security_event('ADMIN_EMAIL_LOGIN_BLOCKED', username=email, details='Non-admin attempted admin email login', severity='CRITICAL')
+                log_security_event('ADMIN_EMAIL_LOGIN_BLOCKED', username=identifier, details='Non-admin attempted admin email login', severity='CRITICAL')
                 flash('Invalid credentials.', 'danger')
                 return render_template('login.html', title='Login', form=form)
             
