@@ -139,10 +139,12 @@ Go to **Consoles** → **Bash console**
 ```bash
 cd /home/your_username
 git clone https://github.com/your-username/neobank.git
-cd neobank
+cd neobank/banking_system
 ```
 
 ### 3.2 Create Virtual Environment
+
+**Important:** The virtual environment should be created in the `banking_system` directory.
 
 ```bash
 python3.11 -m venv venv
@@ -157,13 +159,13 @@ Go to **Web** → **your_web_app_name** → **Web app settings**
 
 Scroll to **Virtualenv section** and set the path to:
 ```
-/home/your_username/neobank/venv
+/home/your_username/neobank/banking_system/venv
 ```
 
 Scroll to **Environment variables** section and add:
 
 ```
-FLASK_APP=/home/your_username/neobank/run.py
+FLASK_APP=/home/your_username/neobank/banking_system/run.py
 FLASK_ENV=production
 SECRET_KEY=generate-a-secure-key-here-use-python-secrets
 DATABASE_URL=mysql://your_username:password@your_username.mysql.pythonanywhere.com/your_username$neobank
@@ -196,13 +198,16 @@ import sys
 import os
 
 # Add your project directory to the Python path
-project_home = '/home/your_username/neobank'
+project_home = '/home/your_username/neobank/banking_system'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
 # Activate virtual environment
 activate_this = os.path.join(project_home, 'venv', 'bin', 'activate_this.py')
 exec(open(activate_this).read(), {'__file__': activate_this})
+
+# Set working directory
+os.chdir(project_home)
 
 # Import and run the Flask app
 from app import create_app
@@ -220,7 +225,7 @@ application = app
 Go to **Web** → **your_web_app_name** → **Static files** section
 
 Add these entries:
-
+banking_system/
 | URL | Directory |
 |-----|-----------|
 | `/static/` | `/home/your_username/neobank/app/static` |
@@ -244,7 +249,7 @@ Note your database details:
 
 ### 4.2 Create Tables
 
-Go to **Consoles** → **Bash console**
+Go to **Consoles** → **Bash co/banking_systemnsole**
 
 ```bash
 cd /home/your_username/neobank
@@ -368,6 +373,7 @@ app = Flask(__name__, template_folder='templates')
 ### 1. Push Changes to GitHub
 
 ```bash
+cd /path/to/yemi  # Navigate to the root directory
 git add .
 git commit -m "Description of changes"
 git push origin main
@@ -378,8 +384,11 @@ git push origin main
 Go to **Consoles** → **Bash console**
 
 ```bash
-cd /home/your_username/neobank
+cd /home/your_username/neobank  # Root directory
 git pull origin main
+
+# If you have new dependencies
+cd /home/your_username/neobank/banking_system
 source venv/bin/activate
 pip install -r requirements.txt
 ```
